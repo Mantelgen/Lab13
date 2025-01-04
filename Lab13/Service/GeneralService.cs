@@ -19,4 +19,62 @@ public class GeneralService
         this.teamsRepository = teamsRepository;
         this.studentsRepository = studentsRepository;
     }
+
+    public IEnumerable<Player> GetAllPlayersFromTeam(long teamID)
+    {
+        //Team team = teamsRepository.FindOne(teamID);
+        return
+            from player in playersRepository.FindAll()
+            where player.Team == teamID
+                select player;
+    }
+
+    public IEnumerable<Player> GetACtivePlayersFromTeamAndGame(long teamID, long gameID)
+    {
+      
+        return 
+            from activePlayer in activePlayersRepository.FindAll()
+            join player in playersRepository.FindAll() on activePlayer.IDPlayer equals player.ID
+            where activePlayer.IDGame == gameID && player.Team == teamID
+            select player;
+    }
+
+    public IEnumerable<Game> GetAllGamesInPeriod(DateTime start, DateTime end)
+    {
+        return 
+            from game in gamesRepository.FindAll()
+            where game.StartDate >= start && game.StartDate <= end
+            select game;
+    }
+
+    public int CalculateScore(Team team,Game game)
+    {
+        return 
+            (from activePlayer in activePlayersRepository.FindAll() 
+            join player in playersRepository.FindAll() on activePlayer.IDPlayer equals player.ID
+            join team2 in teamsRepository.FindAll() on player.Team equals team2.ID 
+            where activePlayer.IDGame==game.ID && team2.ID == team.ID 
+                select activePlayer.NrPoints).Sum();
+    }
+
+    public String CalculateGameScore(long gameID)
+    {
+        Game game = gamesRepository.FindOne(gameID);
+        Team team1 = teamsRepository.FindOne(game.Team1);
+        Team team2 = teamsRepository.FindOne(game.Team2);
+        
+        int scoreTeam1 = CalculateScore(team1, game);
+        int scoreTeam2 = CalculateScore(team2, game);
+        return scoreTeam1.ToString()+" - " + scoreTeam2.ToString();
+    }
+
+    public Team GetTeamFromID(long teamID)
+    {
+        return teamsRepository.FindOne(teamID);
+    }
+
+    public Game GetGameFromID(long gameID)
+    {
+        return gamesRepository.FindOne(gameID);
+    }
 }

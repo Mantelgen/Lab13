@@ -6,7 +6,7 @@ public class Player: Student
 
     public Player(String name,String school, long team):base(name,school)
     {
-        Team = Team;
+        Team = team;
     }
     public override string ToString()
     {

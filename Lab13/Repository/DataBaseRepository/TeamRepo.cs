@@ -27,7 +27,7 @@ public class TeamRepo:AbstractDBRepository<long,Team>
 
     protected override string getSQLIdForEntityId(long id)
     {
-        return "id =" + id;
+        return "id=" + id;
     }
 
     protected override string getSQLValuesForEntity(Team entity)

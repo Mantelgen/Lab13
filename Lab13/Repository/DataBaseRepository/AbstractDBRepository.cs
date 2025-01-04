@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Lab13.Domain;
 using Lab13.Domain.Validators;
 using Npgsql;
@@ -15,7 +16,7 @@ public abstract class AbstractDBRepository<ID,E>: IRepository<ID, E> where E : E
     protected int Port;//=5433;
 
     protected String TableName;
-    protected NpgsqlConnection Connection;
+     protected NpgsqlConnection Connection;
     
 
     protected AbstractDBRepository(IValidator<E> vali, string host, string username, string password, string database, int port, String tableName)
@@ -29,10 +30,11 @@ public abstract class AbstractDBRepository<ID,E>: IRepository<ID, E> where E : E
         Database = database;
         Port = port;
         
-        String ConnectionString="Host="+Host +";Username="+Username + ";Password="+Password+";Database="+Database+";Port="+Port;
-        Connection = new NpgsqlConnection(ConnectionString);
+        String ConnectionString="Host="+Host +";Username="+Username + ";Password="+Password+";Database="+Database+";Port="+Port; Connection = new NpgsqlConnection(ConnectionString);
         try
         {
+            if(Connection.State == System.Data.ConnectionState.Open)
+                Connection.Close();
             Connection.Open();
         }
         catch (Exception ex)
@@ -58,9 +60,9 @@ public abstract class AbstractDBRepository<ID,E>: IRepository<ID, E> where E : E
     {
         NpgsqlCommand cmd;
         NpgsqlDataReader dreader;
-        String sql = "select * from " + TableName + " where" + getSQLIdForEntityId(id);
+        String sql = "select * from " + TableName + " where " + getSQLIdForEntityId(id);
         cmd = new NpgsqlCommand(sql, Connection);
-        dreader = cmd.ExecuteReader();
+         dreader = cmd.ExecuteReader();
         E entity;
         if (dreader.Read())
         {
@@ -70,12 +72,12 @@ public abstract class AbstractDBRepository<ID,E>: IRepository<ID, E> where E : E
         {
             entity= null; 
         }
+        dreader?.Close();
         return entity;
     }
 
     public IEnumerable<E> FindAll()
     {
-        Connection.Open();
         IDictionary<ID, E> entities=new Dictionary<ID, E>();
         NpgsqlCommand cmd;
         NpgsqlDataReader dreader;
@@ -87,6 +89,7 @@ public abstract class AbstractDBRepository<ID,E>: IRepository<ID, E> where E : E
             E entity = createEntityFromResultSet(dreader);
             entities[entity.ID] = entity;
         }
+        dreader?.Close();
         return entities.Values.ToList<E>();
     }
 
@@ -147,4 +150,5 @@ public abstract class AbstractDBRepository<ID,E>: IRepository<ID, E> where E : E
         }
        
     }
+    
 }
