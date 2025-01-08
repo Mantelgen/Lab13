@@ -20,22 +20,22 @@ public class GeneralService
         this.studentsRepository = studentsRepository;
     }
 
-    public IEnumerable<Player> GetAllPlayersFromTeam(long teamID)
+    public IEnumerable<Player> GetAllPlayersFromTeam(Team teamID)
     {
         //Team team = teamsRepository.FindOne(teamID);
         return
             from player in playersRepository.FindAll()
-            where player.Team == teamID
+            where player.Team == teamID.ID
                 select player;
     }
 
-    public IEnumerable<Player> GetACtivePlayersFromTeamAndGame(long teamID, long gameID)
+    public IEnumerable<Player> GetACtivePlayersFromTeamAndGame(Team teamID, Game gameID)
     {
       
         return 
             from activePlayer in activePlayersRepository.FindAll()
             join player in playersRepository.FindAll() on activePlayer.IDPlayer equals player.ID
-            where activePlayer.IDGame == gameID && player.Team == teamID
+            where activePlayer.IDGame == gameID.ID && player.Team == teamID.ID
             select player;
     }
 
@@ -57,9 +57,8 @@ public class GeneralService
                 select activePlayer.NrPoints).Sum();
     }
 
-    public String CalculateGameScore(long gameID)
+    public String CalculateGameScore(Game game)
     {
-        Game game = gamesRepository.FindOne(gameID);
         Team team1 = teamsRepository.FindOne(game.Team1);
         Team team2 = teamsRepository.FindOne(game.Team2);
         
